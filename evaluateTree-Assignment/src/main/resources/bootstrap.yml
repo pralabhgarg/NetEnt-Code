@@ -1,0 +1,23 @@
+# For the consul key/value, this is the git2consul branch
+branch: dev
+
+# New value that points back to branch
+local:
+  environment:
+    name: ${branch}
+
+# Consul / Service Discovery / Configuration setup
+spring:
+  cloud:
+    consul:
+      config:
+        prefix: config/${local.environment.name}
+        profileSeparator: "_"
+        enabled: true
+        format: properties
+        watch:
+
+# By default the delay between cycles is 30 ms.  So you would effectively be constantly
+# refreshing your configuration.  This could be OK depending on your use case, but for the most
+# part at least a minute delay should be fine.
+          delay: 60000

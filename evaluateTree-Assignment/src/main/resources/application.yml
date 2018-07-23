@@ -1,0 +1,95 @@
+server:
+  port: 8087
+spring:
+  profiles.active: common,development
+
+---
+
+# Profile for all the common stuff that is not environment specific.  Note this content can still be overriden
+# via the usual means (external prop file, ENV var, Consul).
+spring:
+  profiles: common
+  application:
+    name: evaluate-tree
+
+  jpa:
+    show-sql: true
+    database-platform: org.hibernate.dialect.MySQL5Dialect
+    generate-ddl: false
+
+    hibernate:
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+      
+      # Change to create or create-drop if you want the integration test to populate your test database with a schema.
+      ddl-auto: none
+
+# Expose properties from the POM for Spring Actuator.
+info:
+  project:
+    version: '@project.version@'
+    name: '@project.name@'
+    desc: '@project.description@'
+    dockerImage: '@docker-image@'
+    p4Changelist: '@p4.changelist@'
+
+# Relocate all Spring Actuator API end points to /manage/*
+management:
+  context-path: /manage
+  #Disabling default health check of redis. We have a custom health indicator for redis (RedisCacheHealthService)  
+  #See: catalogoption.health.optionalServiceDownStatus
+  health: 
+    redis: 
+      enabled: false
+    status: 
+      order: DOWN,OUT_OF_SERVICE,UP,UNKNOWN,OPTIONAL_SERVICE_DOWN  
+
+evaluateTree:
+  health:
+    update-delay: 10000
+    monitor-failed-threshold: 120000
+    #Status code to be set when optional service is down.
+    #Set it to something different then DOWN in order to ignore redis health in aggregate health of microservice. 
+    #So, even when redis is down, microservice health status would still be UP.
+    #Set it to DOWN in case want to consider redis health too in aggregate health of microservice.
+    # See: management.health.status.order and management.health.redis.enabled 
+    optionalServiceDownStatus: OPTIONAL_SERVICE_DOWN    
+
+  # validator constraints  
+  validator:
+    modelYearCodePattern: '[A-Za-z]{3}\d{4}\d{2}'
+    modelYearCodeLength: 9
+    lang-code-pattern: '[A-Za-z]{2}'
+    langCodeLength: 2
+    
+  datamode: runtime
+  releaselevel: 40
+  
+# prefix for @Cacheable key
+  cache:
+    keyUrl: /${local.environment.name}/repository/
+
+# Buffer size related to Kryo for new Output for writing to a byte array. 
+kryo:
+  buffer-initial-size: 196608
+  buffer-max-size: -1
+    
+
+---
+spring:
+  profiles: development
+  datasource:
+    url: jdbc:mysql://localhost:3306/TreeApplication
+    username: pralabh
+    password: P@ssw0rd
+    continueOnError: false
+    # mostly spring boot will deduce this from the url
+    driver-class-name: com.mysql.jdbc.Driver
+
+---
+
+spring:
+  profiles: prod
+  datasource:
+    validation-query: select 1
+    driver-class-name: com.mysql.jdbc.Driver

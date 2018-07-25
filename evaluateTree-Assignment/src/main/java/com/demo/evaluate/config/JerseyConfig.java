@@ -1,4 +1,4 @@
-package com.demo.evaluate.config;
+epackage com.demo.evaluate.config;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,13 +27,13 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @Configuration
-@ApplicationPath("/catalog-option")
+@ApplicationPath("/evaluate-tree")
 public class JerseyConfig extends ResourceConfig {
 
-    @Value("${catalogoption.releaselevel:-1}")
+    @Value("${evaluatetree.releaselevel:-1}")
     private String releaseLevel;
 
-    @Value("${catalogoption.datamode:runtime}")
+    @Value("${evaluatetree.datamode:runtime}")
     private String dataMode;
 
     /**
